@@ -42,10 +42,33 @@ class CourseController extends Controller
             'message' => 'Course created successfully',
         ],200);
     }
+
+    public function show($id){
+        $course = Course::find($id);
+
+        if ($course == null) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'course not found'
+            ],404);
+        }
+        return response()->json([
+            'status' => 200,
+            'data'   => $course,
+            'message' => 'Course created successfully',
+        ],200);
+    }
     // this will return categories, levels, languages
     public function metaData(){
         $categories = Category::all();
         $levels     = Level::all();
         $languages  = Language::all();
+
+        return response()->json([
+            'status'     => 200,
+            'categories' => $categories,
+            'levels'     => $levels,
+            'languages'  => $languages,
+        ],200);
     }
 }

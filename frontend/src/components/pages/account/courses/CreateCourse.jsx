@@ -35,6 +35,7 @@ const CreateCourse = () => {
             }
         })
     }
+    
     return (
         <Layout>
             <section className='section-4'>

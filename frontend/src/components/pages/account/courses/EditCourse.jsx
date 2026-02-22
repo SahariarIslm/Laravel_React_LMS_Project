@@ -1,15 +1,41 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Layout from '../../../common/Layout'
 import UserSidebar from '../../../common/UserSidebar'
-import { useNavigate } from 'react-router-dom' 
+import { useNavigate, useParams } from 'react-router-dom' 
 import { Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { apiUrl, token } from '../../../common/config'
 import toast from 'react-hot-toast'
 
 const EditCourse = () => {
-    const { register, handleSubmit, formState: { errors } } = useForm()
+    const params = useParams()
+    const { register, handleSubmit, formState: {errors}, reset } = useForm({
+        defaultValues: async()=>{
+                await fetch (`${apiUrl}/course/${params}`,{
+                method: 'GET',
+                headers: {
+                    'Content-type':'application/json',
+                    'Accept':'application/json',
+                    'Authorization':`Bearer ${token}`
+                },
+            })
+            .then(res => res.json())
+            .then(result => {
+                if (result.status == 200) {
+                    reset({
+
+                    })
+                }else{
+                    console.log("Something Went Wrong")
+                }
+            })
+        }
+    })
     const navigate = useNavigate();
+    const [categories, setCategories] = useState([]);
+    const [levels, setLevels] = useState([]);
+    const [languages, setLanguages] = useState([]);
+
     const onSubmit = async (data) => {
         await fetch(
             `${apiUrl}/courses`,
@@ -35,6 +61,32 @@ const EditCourse = () => {
             }
         })
     }
+    const courseMetaData = async () =>{
+        await fetch (`${apiUrl}/courses/meta-data`,{
+            method: 'GET',
+            headers: {
+                'Content-type':'application/json',
+                'Accept':'application/json',
+                'Authorization':`Bearer ${token}`
+            },
+        })
+        .then(res => res.json())
+        .then(result => {
+            if (result.status == 200) {
+                setCategories(result.categories)
+                setLevels(result.levels)
+                setLanguages(result.languages)
+            }else{
+                console.log("Something Went Wrong")
+            }
+        })
+    } 
+    useEffect(()=>{ // runs at least once garunteed
+        // The code to run
+        courseMetaData()
+
+        // optional cleanup||return() function
+    },[]); // The dependency array
     return (
         <Layout>
             <section className='section-4'>
@@ -79,20 +131,58 @@ const EditCourse = () => {
                                                 </div>
                                                 <div className='mb-3'>
                                                     <label className='form-label' htmlFor='category' id='category'>Category</label>
-                                                    <select className='form-select'>
+                                                    <select 
+                                                        {
+                                                            ...register('category', { 
+                                                                required: 'The category is required.' 
+                                                            })
+                                                        }
+                                                        className='form-select'
+                                                    >
                                                         <option value="">Select a Category</option>
+                                                        {
+                                                            categories && categories.map(category=>{
+                                                                return (
+                                                                    <option value="category.id">{category.name}</option>
+                                                                )
+                                                            })
+                                                        }
                                                     </select>
+                                                    {
+                                                        errors.category && <p className="invalid-feedback">{errors.category.message}</p>
+                                                    }
                                                 </div>
                                                 <div className='mb-3'>
                                                     <label className='form-label' htmlFor='level' id='level'>Level</label>
                                                     <select className='form-select'>
+                                                        {
+                                                            ...register('category', { 
+                                                                required: 'The category is required.' 
+                                                            })
+                                                        }
                                                         <option value="">Select a Level</option>
+                                                        {
+                                                            levels && levels.map(levels=>{
+                                                                return (
+                                                                    <option value="levels.id">{levels.name}</option>
+                                                                )
+                                                            })
+                                                        }
                                                     </select>
                                                 </div>
                                                 <div className='mb-3'>
                                                     <label className='form-label' htmlFor='language' id='language'>Language</label>
                                                     <select className='form-select'>
                                                         <option value="">Select a Language</option>
+                                                        {
+                                                            languages && languages.map(
+                                                                languages=>{
+                                                                    return (
+                                                                        <option value="languages.id">{languages.name}</option>
+                                                                    )
+                                                                }
+                                                            )
+                                                        }
                                                     </select>
                                                 </div>
                                                 <div className='mb-3'>
