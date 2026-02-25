@@ -6,12 +6,14 @@ import { Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { apiUrl, token } from '../../../common/config'
 import toast from 'react-hot-toast'
+import ManageOutcome from './ManageOutcome'
 
 const EditCourse = () => {
     const params = useParams()
+    const [loading, setLoading] = useState(false);
     const { register, handleSubmit, formState: {errors}, reset } = useForm({
         defaultValues: async()=>{
-                await fetch (`${apiUrl}/course/${params}`,{
+                await fetch (`${apiUrl}/course/${params.id}`,{
                 method: 'GET',
                 headers: {
                     'Content-type':'application/json',
@@ -22,8 +24,15 @@ const EditCourse = () => {
             .then(res => res.json())
             .then(result => {
                 if (result.status == 200) {
+                    console.log(result);
                     reset({
-
+                        title: result.data.title,
+                        category: result.data.category,
+                        level: result.data.level,
+                        language: result.data.language,
+                        description: result.data.description,
+                        sell_price: result.data.sell_price,
+                        cross_price: result.data.cross_price
                     })
                 }else{
                     console.log("Something Went Wrong")
@@ -37,10 +46,11 @@ const EditCourse = () => {
     const [languages, setLanguages] = useState([]);
 
     const onSubmit = async (data) => {
+        setLoading(true)
         await fetch(
-            `${apiUrl}/courses`,
+            `${apiUrl}/course/${params.id}`,
                 {
-                    method: 'POST',
+                    method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
@@ -51,13 +61,13 @@ const EditCourse = () => {
         )
         .then(res=> res.json())
         .then(result=> {
+            setLoading(false)
             console.log(result);
             if(result.status == 200){
                 toast.success(result.message);
-                // redirect after successfully submission 
                 navigate('/account/courses/edit/'+result.data.id)
             }else{
-                toast.error(result.message);
+                toast.error(result.message)
             }
         })
     }
@@ -130,20 +140,21 @@ const EditCourse = () => {
                                                     }
                                                 </div>
                                                 <div className='mb-3'>
-                                                    <label className='form-label' htmlFor='category' id='category'>Category</label>
+                                                    <label className='form-label' htmlFor='category'>Category</label>
                                                     <select 
+                                                        className={`form-control ${errors.category && 'is-invalid'}`}
+                                                        id='category'
                                                         {
                                                             ...register('category', { 
                                                                 required: 'The category is required.' 
                                                             })
                                                         }
-                                                        className='form-select'
                                                     >
                                                         <option value="">Select a Category</option>
                                                         {
                                                             categories && categories.map(category=>{
                                                                 return (
-                                                                    <option value="category.id">{category.name}</option>
+                                                                    <option key={category.id} value={category.id}>{category.name}</option>
                                                                 )
                                                             })
                                                         }
@@ -153,84 +164,117 @@ const EditCourse = () => {
                                                     }
                                                 </div>
                                                 <div className='mb-3'>
-                                                    <label className='form-label' htmlFor='level' id='level'>Level</label>
-                                                    <select className='form-select'>
-                                                        {
-                                                            ...register('category', { 
-                                                                required: 'The category is required.' 
+                                                    <label className='form-label' htmlFor='level'>Level</label>
+                                                    <select 
+                                                        className={`form-control ${errors.language && 'is-invalid'}`}
+                                                        id='level'
+                                                        { 
+                                                            ...register('level', { 
+                                                                required: 'The level is required.' 
                                                             })
                                                         }
+                                                    >
+                                                        
                                                         <option value="">Select a Level</option>
                                                         {
-                                                            levels && levels.map(levels=>{
+                                                            levels && levels.map(level=>{
                                                                 return (
-                                                                    <option value="levels.id">{levels.name}</option>
+                                                                    <option key={level.id} value={level.id}>{level.name}</option>
                                                                 )
                                                             })
                                                         }
                                                     </select>
+                                                    {
+                                                        errors.level && <p className="invalid-feedback">{errors.level.message}</p>
+                                                    }
                                                 </div>
                                                 <div className='mb-3'>
-                                                    <label className='form-label' htmlFor='language' id='language'>Language</label>
-                                                    <select className='form-select'>
+                                                    <label className='form-label' htmlFor='language'>Language</label>
+                                                    <select 
+                                                        className={`form-control ${errors.language && 'is-invalid'}`}
+                                                        id='language'
+                                                        { 
+                                                            ...register('language', { 
+                                                                required: 'The language is required.' 
+                                                            })
+                                                        }
+                                                    >
                                                         <option value="">Select a Language</option>
                                                         {
                                                             languages && languages.map(
-                                                                languages=>{
+                                                                language=>{
                                                                     return (
-                                                                        <option value="languages.id">{languages.name}</option>
+                                                                        <option key={language.id} value={language.id}>{language.name}</option>
                                                                     )
                                                                 }
                                                             )
                                                         }
                                                     </select>
+                                                    {
+                                                        errors.language && <p className="invalid-feedback">{errors.language.message}</p>
+                                                    }
                                                 </div>
                                                 <div className='mb-3'>
-                                                    <label className='form-label' htmlFor='language' id='language'>Description</label>
-                                                    <textarea placeholder="Description" rows={5} id="description" className='form-control'></textarea>
+                                                    <label className='form-label' htmlFor='description'>Description</label>
+                                                    <textarea 
+                                                        placeholder="Description" 
+                                                        rows={5} 
+                                                        id="description" 
+                                                        className='form-control'
+                                                        {
+                                                            ...register('description', {
+                                                                required: 'The description is required.' 
+                                                            })
+                                                        }
+                                                    >
+                                                    </textarea>
+                                                    {
+                                                        errors.description && <p className="invalid-feedback">{errors.description.message}</p>
+                                                    }
                                                 </div>
                                                 <h4 className='h5 border-bottom pb3 mb-3'>Pricing</h4>
                                                 <div className='mb-3'>
                                                     <label className='form-label' htmlFor='sell-price'>Sell Price</label>
                                                     <input
                                                         {
-                                                            ...register('title', { 
-                                                                required: 'The title is required.' 
+                                                            ...register('sell_price', {
+                                                                required: 'The sell-price is required.' 
                                                             })
                                                         }
                                                         type="text" 
-                                                        className={`form-control ${errors.title && 'is-invalid'}`}
+                                                        className={`form-control ${errors.sell_price && 'is-invalid'}`}
                                                         placeholder='Sell Price'
                                                         id='sell-price'
                                                     />
                                                     {
-                                                        errors.title && <p className="invalid-feedback">{errors.title.message}</p>
+                                                        errors.sell_price && <p className="invalid-feedback">{errors.sell_price.message}</p>
                                                     }
                                                 </div>
                                                 <div className='mb-3'>
                                                     <label className='form-label' htmlFor='cross-price'>Cross Price</label>
                                                     <input
                                                         {
-                                                            ...register('title', { 
-                                                                required: 'The cross-price is required.' 
+                                                            ...register('cross_price', {
                                                             })
                                                         }
                                                         type="text" 
-                                                        className={`form-control ${errors.title && 'is-invalid'}`}
+                                                        className={`form-control`}
                                                         placeholder='Cross Price'
                                                         id='cross-price'
                                                     />
-                                                    {
-                                                        errors.title && <p className="invalid-feedback">{errors.title.message}</p>
-                                                    }
                                                 </div>
-                                                <button className='btn btn-primary'>Update</button>
+
+                                                <button className='btn btn-primary'
+                                                    disabled={ loading } >
+                                                    { loading == false ? 'Update' : 'Please wait...' }
+                                                
+                                                </button>
                                             </div>
                                         </div>
                                     </form>
                                 </div>
                                 <div className='col-md-5'>
-                                    
+                                    <ManageOutcome />
                                 </div>
                             </div>
                         </div>
